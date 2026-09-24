@@ -13,17 +13,26 @@ jobs:
         with:
           channel: 'stable'
           
-      # 1. Создаем структуру проекта
-      - run: flutter create --org com.example .
+      # 1. Создаем чистый проект во временной папке, чтобы не было конфликтов
+      - run: flutter create --org com.example template_app
       
-      # 2. Добавляем библиотеки, которые требуются для вашего Crypto Wallet
-      - run: flutter pub add google_fonts cupertino_icons
+      # 2. Переносим ваш код из DartPad в созданный проект
+      - run: cp lib/main.dart template_app/lib/main.dart
       
-      # 3. Запускаем сборку
-      - run: flutter build apk --release
-      
-      # 4. Сохраняем готовый файл для скачивания
+      # 3. Переходим в папку проекта и добавляем нужные библиотеки
+      - name: Install dependencies
+        run: |
+          cd template_app
+          flutter pub add google_fonts cupertino_icons
+          
+      # 4. Собираем APK-файл
+      - name: Build APK
+        run: |
+          cd template_app
+          flutter build apk --release
+          
+      # 5. Выкладываем готовый файл для скачивания
       - uses: actions/upload-artifact@v4
         with:
           name: crypto-wallet-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: template_app/build/app/outputs/flutter-apk/app-release.apk
