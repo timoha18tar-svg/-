@@ -12,7 +12,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter create --org com.example . --force
+      # Исправленная команда генерации структуры папок Android
+      - run: flutter create --org com.example .
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
