@@ -1,7 +1,9 @@
-name: Build APK
+name: Deploy Web to GitHub Pages
 on: [push, workflow_dispatch]
+permissions:
+  contents: write
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,18 +15,24 @@ jobs:
         with:
           channel: 'stable'
           
-      # 1. Создаем структуру проекта
-      - run: flutter create --org com.example .
+      - run: flutter create --org com.example template_app
+      - run: cp lib/main.dart template_app/lib/main.dart
       
-      # 2. Добавляем библиотеки, которые требуются для вашего Crypto Wallet
-      - run: flutter pub add google_fonts cupertino_icons
-      
-      # 3. Запускаем сборку
-      - run: flutter build apk --release
-      
-      # 4. Сохраняем готовый файл для скачивания
-      - uses: actions/upload-artifact@v4
+      - name: Install dependencies
+        run: |
+          cd template_app
+          flutter pub add google_fonts cupertino_icons
+          
+      # Собираем Web-версию с правильным указанием пути к вашему репозиторию
+      - name: Build Web
+        run: |
+          cd template_app
+          flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+          
+      # Публикуем готовый сайт прямо в репозиторий
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          name: crypto-wallet-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          folder: template_app/build/web
+          branch: gh-pages
 
